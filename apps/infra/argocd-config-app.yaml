@@ -1,0 +1,36 @@
+# ArgoCD self-management — syncs argocd-cm and argocd-rbac-cm from this repo
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-config
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: infra
+
+  source:
+    repoURL: https://github.com/I-Am-PrashantGawali/argocd-eks.git
+    targetRevision: HEAD
+    path: config
+    directory:
+      exclude: argocd-secret.yaml   # never sync secrets to the cluster
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: false      # conservative — don't delete ArgoCD config objects
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m

@@ -1,0 +1,28 @@
+# ArgoCD ALB Ingress — argocd.prashantgawali.site
+# TLS terminated at ALB using ACM certificate
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:132551339390:certificate/6d379534-964e-46f3-bc88-0051a03ac88a
+    external-dns.alpha.kubernetes.io/hostname: argocd.prashantgawali.site
+spec:
+  ingressClassName: alb
+  rules:
+    - host: argocd.prashantgawali.site
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80

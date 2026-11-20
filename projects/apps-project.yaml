@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Application workloads — three-tier app k8s manifests"
+
+  sourceRepos:
+    # App manifests live in gitops-app. Image tags are written here by CI.
+    - https://github.com/I-Am-PrashantGawali/gitops-app.git
+
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: workshop
+    - server: https://kubernetes.default.svc
+      namespace: staging
+    - server: https://kubernetes.default.svc
+      namespace: production
+
+  # Apps never create cluster-scoped resources
+  clusterResourceWhitelist: []
+
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ServiceAccount
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: policy
+      kind: PodDisruptionBudget
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: batch
+      kind: Job
+    - group: batch
+      kind: CronJob
+    - group: external-secrets.io
+      kind: ExternalSecret
+
+  roles:
+    - name: app-deployer
+      description: CI pipeline — writes image tags and triggers sync
+      policies:
+        - p, proj:apps:app-deployer, applications, sync,   apps/*, allow
+        - p, proj:apps:app-deployer, applications, get,    apps/*, allow
+        - p, proj:apps:app-deployer, applications, update, apps/*, allow
+      groups:
+        - I-Am-PrashantGawali:owners

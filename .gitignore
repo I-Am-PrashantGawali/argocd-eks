@@ -1,0 +1,11 @@
+# Never commit real secret values
+config/argocd-secret.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

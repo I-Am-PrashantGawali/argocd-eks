@@ -1,0 +1,42 @@
+# Three-tier application — frontend, backend, MongoDB
+# Source: gitops-app repo → k8s_manifests/
+#
+# The CI pipeline in gitops-app writes new image tags into k8s_manifests/
+# and pushes a commit. ArgoCD detects the diff here and rolls out the update.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: three-tier-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"    # deploy after infra wave is healthy
+spec:
+  project: apps
+
+  source:
+    # ── Points to gitops-app repo ───────────────────────────────────────────
+    repoURL: https://github.com/I-Am-PrashantGawali/gitops-app.git
+    targetRevision: HEAD
+    path: k8s_manifests
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: workshop
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

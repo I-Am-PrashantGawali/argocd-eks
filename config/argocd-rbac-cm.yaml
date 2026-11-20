@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  policy.default: role:readonly
+
+  policy.csv: |
+    # Admin: full control across all projects
+    p, role:admin, applications,    *, */*, allow
+    p, role:admin, applicationsets, *, */*, allow
+    p, role:admin, clusters,        *, *, allow
+    p, role:admin, repositories,    *, *, allow
+    p, role:admin, projects,        *, *, allow
+    p, role:admin, accounts,        *, *, allow
+    p, role:admin, logs,            get, */*, allow
+    p, role:admin, exec,            create, */*, allow
+
+    # Infra team: manage infra project apps
+    p, role:infra-team, applications,    *, infra/*, allow
+    p, role:infra-team, applicationsets, *, infra/*, allow
+    p, role:infra-team, repositories,    get, *, allow
+    p, role:infra-team, clusters,        get, *, allow
+    p, role:infra-team, logs,            get, infra/*, allow
+
+    # App team: sync and view app workloads only
+    p, role:app-team, applications, get,    apps/*, allow
+    p, role:app-team, applications, sync,   apps/*, allow
+    p, role:app-team, applications, update, apps/*, allow
+    p, role:app-team, logs,         get,    apps/*, allow
+
+    # GitHub org owners → admin
+    g, I-Am-PrashantGawali:owners, role:admin
+
+  policy.scopes: "[groups, email]"

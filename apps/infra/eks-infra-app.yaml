@@ -1,0 +1,44 @@
+# EKS post-deploy Kubernetes manifests (StorageClass, Cluster Autoscaler, etc.)
+# Source: gitops-eks-infra repo → post-deploy-k8s/
+# CloudFormation stacks are deployed by gitops-eks-infra CI, not by ArgoCD.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eks-infra
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: infra
+
+  source:
+    # ── Points to gitops-eks-infra repo ────────────────────────────────────
+    repoURL: https://github.com/I-Am-PrashantGawali/gitops-eks-infra.git
+    targetRevision: HEAD
+    path: post-deploy-k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 2m
+
+  ignoreDifferences:
+    - group: apps
+      kind: DaemonSet
+      jsonPointers:
+        - /spec/template/spec/nodeSelector

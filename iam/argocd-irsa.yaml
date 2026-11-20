@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  IAM role for ArgoCD server via IRSA.
+  ArgoCD needs ECR read access so it can track image tags,
+  and SSM read access to fetch any app secrets stored in Parameter Store.
+  Deploy AFTER 06-oidc-irsa.yaml.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: prod
+  OIDCProviderArn:
+    Type: String
+    Description: Import from 06-oidc-irsa stack output OIDCProviderArn
+  OIDCProviderUrl:
+    Type: String
+    Description: Import from 06-oidc-irsa stack output OIDCProviderUrl (no https://)
+
+Resources:
+
+  # ── ArgoCD Server IRSA Role ───────────────────────────────────────────────
+  ArgoCDServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-argocd-server-role
+      AssumeRolePolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": "${OIDCProviderArn}"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "${OIDCProviderUrl}:sub": "system:serviceaccount:argocd:argocd-server",
+                  "${OIDCProviderUrl}:aud": "sts.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ArgoCDServerPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${EnvironmentName}-argocd-server-policy
+      Roles:
+        - !Ref ArgoCDServerRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # Read ECR — ArgoCD image updater uses this
+          - Sid: ECRRead
+            Effect: Allow
+            Action:
+              - ecr:GetAuthorizationToken
+              - ecr:BatchCheckLayerAvailability
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:DescribeImages
+              - ecr:DescribeRepositories
+              - ecr:ListImages
+            Resource: '*'
+          # Read SSM parameters prefixed to this environment (no secrets in Git)
+          - Sid: SSMRead
+            Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+            Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvironmentName}/*
+
+  # ── ArgoCD Application Controller IRSA Role ───────────────────────────────
+  # The application-controller reconciles cluster state — it only needs
+  # cluster-level kube access (via kubeconfig), not AWS APIs directly.
+  # We give it a minimal role so it can assume roles in spoke clusters later.
+  ArgoCDAppControllerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-argocd-app-controller-role
+      AssumeRolePolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": "${OIDCProviderArn}"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "${OIDCProviderUrl}:sub": "system:serviceaccount:argocd:argocd-application-controller",
+                  "${OIDCProviderUrl}:aud": "sts.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ArgoCDAppControllerPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${EnvironmentName}-argocd-app-controller-policy
+      Roles:
+        - !Ref ArgoCDAppControllerRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # Minimal — only what's needed for future multi-cluster assume-role
+          - Sid: AssumeSpokeClusters
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-argocd-spoke-*
+
+Outputs:
+  ArgoCDServerRoleArn:
+    Value: !GetAtt ArgoCDServerRole.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-ArgoCDServerRoleArn
+
+  ArgoCDAppControllerRoleArn:
+    Value: !GetAtt ArgoCDAppControllerRole.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-ArgoCDAppControllerRoleArn

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    # Keeps ArgoCD itself out of ArgoCD's own sync scope for infra namespace
+    app.kubernetes.io/managed-by: argocd
+    environment: prod

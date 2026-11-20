@@ -1,0 +1,44 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Root Application — App of Apps
+#
+# This is the ONLY resource you apply manually (once):
+#   kubectl apply -f apps/root-app.yaml
+#
+# After that, ArgoCD watches this repo and self-manages every child app
+# declared under apps/infra/ and apps/workloads/.
+# ════════════════════════════════════════════════════════════════════════════
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+
+  source:
+    # ── CHANGE THIS to your actual gitops-argocd repo URL ──────────────────
+    repoURL: https://github.com/I-Am-PrashantGawali/argocd-eks.git
+    targetRevision: HEAD
+    path: apps          # watches apps/infra/ and apps/workloads/ recursively
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

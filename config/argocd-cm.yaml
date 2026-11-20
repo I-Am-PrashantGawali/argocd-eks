@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+
+  # ── URL ───────────────────────────────────────────────────────────────────
+  url: https://argocd.prashantgawali.site
+
+  # ── GitHub OAuth SSO ──────────────────────────────────────────────────────
+  dex.config: |
+    connectors:
+      - type: github
+        id: github
+        name: GitHub
+        config:
+          clientID: $argocd-github-secret:clientID
+          clientSecret: $argocd-github-secret:clientSecret
+          redirectURI: https://argocd.prashantgawali.site/api/dex/callback
+          orgs:
+            - name: I-Am-PrashantGawali
+
+  # ── Repository declarations ───────────────────────────────────────────────
+  # All three repos must be listed here so ArgoCD can read them.
+  # Public repos need no credentials. Private repos need a Secret with
+  # type: Opaque and keys: url, username, password (or sshPrivateKey).
+  repositories: |
+    - url: https://github.com/I-Am-PrashantGawali/argocd-eks.git
+      name: gitops-argocd
+      type: git
+    - url: https://github.com/I-Am-PrashantGawali/gitops-eks-infra.git
+      name: gitops-eks-infra
+      type: git
+    - url: https://github.com/I-Am-PrashantGawali/gitops-app.git
+      name: gitops-app
+      type: git
+
+  # ── Resource tracking ─────────────────────────────────────────────────────
+  application.resourceTrackingMethod: annotation+label
+
+  # ── Webhook sync (optional but recommended) ───────────────────────────────
+  # Set up a GitHub webhook in each repo pointing to:
+  #   https://argocd.prashantgawali.site/api/webhook
+  # This makes ArgoCD sync within seconds of a push instead of polling.
+
+  # ── Noise suppression for AWS-managed fields ──────────────────────────────
+  resource.customizations: |
+    admissionregistration.k8s.io/MutatingWebhookConfiguration:
+      ignoreDifferences: |
+        jsonPointers:
+          - /webhooks/0/clientConfig/caBundle
+    admissionregistration.k8s.io/ValidatingWebhookConfiguration:
+      ignoreDifferences: |
+        jsonPointers:
+          - /webhooks/0/clientConfig/caBundle
+
+  resource.customizations.ignoreDifferences.all: |
+    managedFieldsManagers:
+      - kube-controller-manager
+      - eks
+
+  # ── UI banner ─────────────────────────────────────────────────────────────
+  ui.bannercontent: "GitOps cluster — all changes must go through Git. Direct kubectl edits will be reverted."
+  ui.bannerurl: "https://github.com/I-Am-PrashantGawali/argocd-eks"
+  ui.bannerrgb: "#e96d2b"
+  ui.bannerpermanent: "true"

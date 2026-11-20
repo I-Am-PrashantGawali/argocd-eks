@@ -1,0 +1,82 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Pin to a specific ArgoCD release — upgrade deliberately, not automatically.
+# Check https://github.com/argoproj/argo-cd/releases for latest stable.
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.3/manifests/install.yaml
+  - ingress.yaml
+
+# Force ALL resources from the upstream manifest into the argocd namespace.
+# Without this, resources that lack a namespace field land in `default`.
+namespace: argocd
+
+patches:
+
+  # 1. ArgoCD server — run in insecure mode (TLS handled by ALB)
+  - target:
+      kind: Deployment
+      name: argocd-server
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --insecure
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+  # 2. App controller — resource limits
+  - target:
+      kind: StatefulSet
+      name: argocd-application-controller
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+
+  # 3. Repo server — resource limits
+  - target:
+      kind: Deployment
+      name: argocd-repo-server
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+  # 4. IRSA annotation on argocd-server service account
+  - target:
+      kind: ServiceAccount
+      name: argocd-server
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::132551339390:role/prod-argocd-server-role
+
+  # 5. IRSA annotation on argocd-application-controller service account
+  - target:
+      kind: ServiceAccount
+      name: argocd-application-controller
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::132551339390:role/prod-argocd-app-controller-role
