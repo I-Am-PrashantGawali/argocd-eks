@@ -59,4 +59,4 @@ spec:
         - p, proj:apps:app-deployer, applications, get,    apps/*, allow
         - p, proj:apps:app-deployer, applications, update, apps/*, allow
       groups:
-        - I-Am-PrashantGawali:owners
+        - COGNIVRAI:owners

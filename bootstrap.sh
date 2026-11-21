@@ -37,6 +37,7 @@ echo ""
 echo "── Pre-flight: checking SSM parameters ──"
 MISSING=0
 for PARAM in \
+  "/${ENV}/argocd/github-client-id" \
   "/${ENV}/argocd/github-client-secret" \
   "/${ENV}/argocd/admin-password-bcrypt"; do
   if ! aws ssm get-parameter --name "${PARAM}" --region "${REGION}" > /dev/null 2>&1; then

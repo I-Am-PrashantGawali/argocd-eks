@@ -62,4 +62,4 @@ spec:
         - p, proj:infra:infra-deployer, applications, get,    infra/*, allow
         - p, proj:infra:infra-deployer, applications, update, infra/*, allow
       groups:
-        - I-Am-PrashantGawali:owners
+        - COGNIVRAI:owners

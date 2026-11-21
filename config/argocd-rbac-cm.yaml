@@ -34,6 +34,6 @@ data:
     p, role:app-team, logs,         get,    apps/*, allow
 
     # GitHub org owners → admin
-    g, I-Am-PrashantGawali:owners, role:admin
+    g, COGNIVRAI:owners, role:admin
 
   policy.scopes: "[groups, email]"

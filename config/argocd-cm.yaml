@@ -18,11 +18,11 @@ data:
         id: github
         name: GitHub
         config:
-          clientID: $argocd-github-secret:clientID
-          clientSecret: $argocd-github-secret:clientSecret
+          clientID: $argocd-secret:clientID
+          clientSecret: $argocd-secret:clientSecret
           redirectURI: https://argocd.prashantgawali.site/api/dex/callback
           orgs:
-            - name: I-Am-PrashantGawali
+            - name: COGNIVRAI
 
   # ── Repository declarations ───────────────────────────────────────────────
   # All three repos must be listed here so ArgoCD can read them.
