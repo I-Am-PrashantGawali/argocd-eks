@@ -56,6 +56,7 @@ data:
     managedFieldsManagers:
       - kube-controller-manager
       - eks
+      - external-secrets
 
   # ── UI banner ─────────────────────────────────────────────────────────────
   ui.bannercontent: "GitOps cluster — all changes must go through Git. Direct kubectl edits will be reverted."
