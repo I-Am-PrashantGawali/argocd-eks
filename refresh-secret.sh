@@ -87,7 +87,12 @@ kubectl create secret generic argocd-secret \
   --from-literal=admin.password="${ADMIN_PASSWORD_BCRYPT}" \
   --from-literal=admin.passwordMtime="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --from-literal=server.secretkey="${SERVER_SECRET_KEY}" \
-  --save-config --dry-run=client -o yaml | kubectl apply -f -
+  --save-config --dry-run=client -o yaml | \
+  kubectl label --local -f - \
+    app.kubernetes.io/name=argocd-secret \
+    app.kubernetes.io/part-of=argocd \
+    --dry-run=client -o yaml | \
+  kubectl apply -f -
 
 echo " ✓ argocd-secret updated"
 
