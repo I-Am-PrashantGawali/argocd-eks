@@ -41,6 +41,47 @@ data:
   # ── Resource tracking ─────────────────────────────────────────────────────
   application.resourceTrackingMethod: annotation+label
 
+  # ── Show Pods and ReplicaSets in the UI tree ───────────────────────────────
+  # ArgoCD hides these by default. Including them lets you see pod status,
+  # logs and events directly from the ArgoCD tree view.
+  resource.inclusions: |
+    - apiGroups:
+      - ""
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - "apps"
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - "batch"
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - "autoscaling"
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - "networking.k8s.io"
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+    - apiGroups:
+      - "external-secrets.io"
+      kinds:
+      - "*"
+      clusters:
+      - "*"
+
   # ── Noise suppression for AWS-managed fields ──────────────────────────────
   resource.customizations: |
     admissionregistration.k8s.io/MutatingWebhookConfiguration:
