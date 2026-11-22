@@ -22,7 +22,7 @@ data:
           clientSecret: $argocd-secret:clientSecret
           redirectURI: https://argocd.prashantgawali.site/auth/callback
           orgs:
-            - name: I-Am-PrashantGawali
+            - name: COGNIVRAI
 
   # ── Repository declarations ───────────────────────────────────────────────
   # All three repos must be listed here so ArgoCD can read them.
