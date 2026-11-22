@@ -1,0 +1,38 @@
+# External DNS — creates Route53 records from Ingress/Service annotations
+# Source: gitops-eks-infra repo → dns-tls/03-external-dns.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: infra
+
+  source:
+    repoURL: https://github.com/I-Am-PrashantGawali/gitops-eks-infra.git
+    targetRevision: HEAD
+    path: dns-tls
+    directory:
+      include: '03-external-dns.yaml'
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-dns
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 2m
