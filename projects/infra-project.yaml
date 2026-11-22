@@ -31,6 +31,8 @@ spec:
       namespace: external-secrets
     - server: https://kubernetes.default.svc
       namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: app
 
   clusterResourceWhitelist:
     - group: ''
