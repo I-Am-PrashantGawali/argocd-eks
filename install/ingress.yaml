@@ -12,6 +12,7 @@ metadata:
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:132551339390:certificate/6d379534-964e-46f3-bc88-0051a03ac88a
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
     external-dns.alpha.kubernetes.io/hostname: argocd.prashantgawali.site
 spec:
   ingressClassName: alb

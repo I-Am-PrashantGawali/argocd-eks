@@ -11,7 +11,9 @@ data:
   # ── URL ───────────────────────────────────────────────────────────────────
   url: https://argocd.prashantgawali.site
 
-  # ── GitHub OAuth SSO ──────────────────────────────────────────────────────
+  # ── GitHub SSO via Dex ────────────────────────────────────────────────────
+  # redirectURI must match what ArgoCD sends in the OAuth flow (/auth/callback)
+  # and must be registered in the GitHub OAuth App.
   dex.config: |
     connectors:
       - type: github
@@ -20,14 +22,11 @@ data:
         config:
           clientID: $argocd-secret:clientID
           clientSecret: $argocd-secret:clientSecret
-          redirectURI: https://argocd.prashantgawali.site/auth/callback
+          redirectURI: https://argocd.prashantgawali.site/api/dex/callback
           orgs:
             - name: COGNIVRAI
 
   # ── Repository declarations ───────────────────────────────────────────────
-  # All three repos must be listed here so ArgoCD can read them.
-  # Public repos need no credentials. Private repos need a Secret with
-  # type: Opaque and keys: url, username, password (or sshPrivateKey).
   repositories: |
     - url: https://github.com/I-Am-PrashantGawali/argocd-eks.git
       name: gitops-argocd
@@ -41,11 +40,6 @@ data:
 
   # ── Resource tracking ─────────────────────────────────────────────────────
   application.resourceTrackingMethod: annotation+label
-
-  # ── Webhook sync (optional but recommended) ───────────────────────────────
-  # Set up a GitHub webhook in each repo pointing to:
-  #   https://argocd.prashantgawali.site/api/webhook
-  # This makes ArgoCD sync within seconds of a push instead of polling.
 
   # ── Noise suppression for AWS-managed fields ──────────────────────────────
   resource.customizations: |
