@@ -43,3 +43,21 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
+
+  # ESO owns and continuously mutates these resources (status, resourceVersion,
+  # ownerReferences). ArgoCD cannot reconcile them so they show OutOfSync.
+  # Ignoring their metadata and status fields keeps the app Synced.
+  ignoreDifferences:
+    - group: external-secrets.io
+      kind: ExternalSecret
+      jsonPointers:
+        - /status
+        - /metadata/resourceVersion
+    - group: ""
+      kind: Secret
+      name: mongo-sec
+      namespace: workshop
+      jsonPointers:
+        - /metadata/resourceVersion
+        - /metadata/annotations
+        - /data
