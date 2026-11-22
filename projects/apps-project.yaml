@@ -11,6 +11,8 @@ spec:
   sourceRepos:
     # App manifests live in gitops-app. Image tags are written here by CI.
     - https://github.com/I-Am-PrashantGawali/gitops-app.git
+    # Portfolio website manifests
+    - https://github.com/I-Am-PrashantGawali/I-Am-PrashantGawali.github.io.git
 
   destinations:
     - server: https://kubernetes.default.svc
@@ -19,6 +21,8 @@ spec:
       namespace: staging
     - server: https://kubernetes.default.svc
       namespace: production
+    - server: https://kubernetes.default.svc
+      namespace: default
 
   # ClusterSecretStore is cluster-scoped (created by the app manifests via ESO)
   clusterResourceWhitelist:
