@@ -109,6 +109,13 @@ kubectl rollout restart deployment/argocd-dex-server -n argocd
 kubectl rollout status deployment/argocd-dex-server -n argocd --timeout=180s
 echo " ✓ Dex restarted"
 
+# ── Restart argocd-server so it re-registers the SSO /auth/login/sso route ──
+echo ""
+echo "── Restarting argocd-server ──"
+kubectl rollout restart deployment/argocd-server -n argocd
+kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
+echo " ✓ argocd-server restarted"
+
 echo ""
 echo "============================================================"
 echo " ✓ argocd-secret refreshed successfully"
