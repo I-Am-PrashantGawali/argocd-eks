@@ -24,6 +24,8 @@ spec:
     repoURL: https://github.com/I-Am-PrashantGawali/argocd-eks.git
     targetRevision: HEAD
     path: apps          # watches apps/infra/ and apps/workloads/ recursively
+    directory:
+      recurse: true     # required — without this ArgoCD only reads top-level files
 
   destination:
     server: https://kubernetes.default.svc
