@@ -39,7 +39,9 @@ data:
       type: git
 
   # ── Resource tracking ─────────────────────────────────────────────────────
-  application.resourceTrackingMethod: annotation+label
+  # "label" tracks by app.kubernetes.io/instance label AND follows
+  # ownerReferences — this makes ReplicaSets and Pods appear in the tree.
+  application.resourceTrackingMethod: label
 
   # ── Show Pods and ReplicaSets in the UI tree ───────────────────────────────
   # ArgoCD excludes ReplicaSets by default (hardcoded internal default).
