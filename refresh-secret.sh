@@ -91,11 +91,17 @@ kubectl create secret generic argocd-secret \
 
 echo " ✓ argocd-secret updated"
 
+# Wait for secret to propagate to all pods before restarting Dex
+echo ""
+echo "── Waiting 15s for secret to propagate ──"
+sleep 15
+echo " ✓ Secret propagated"
+
 # ── Restart Dex so it picks up new clientID/clientSecret immediately ─────
 echo ""
 echo "── Restarting argocd-dex-server ──"
 kubectl rollout restart deployment/argocd-dex-server -n argocd
-kubectl rollout status deployment/argocd-dex-server -n argocd --timeout=120s
+kubectl rollout status deployment/argocd-dex-server -n argocd --timeout=180s
 echo " ✓ Dex restarted"
 
 echo ""
