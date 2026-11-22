@@ -39,6 +39,21 @@ gitops-argocd/
 | `gitops-eks-infra` | `post-deploy-k8s/` — StorageClass, Cluster Autoscaler, etc. |
 | `gitops-app` | `k8s_manifests/` — frontend, backend, MongoDB deployments |
 
+## Secret management
+
+Secrets are never stored in Git. They live in AWS SSM Parameter Store and are written to the cluster by scripts.
+
+**If SSO stops working or the secret is missing keys** (e.g. after a cluster rebuild):
+```bash
+./refresh-secret.sh prod us-east-1
+```
+This fetches all values from SSM, rewrites `argocd-secret`, and restarts Dex. Safe to run at any time — it is fully idempotent.
+
+**To rotate the GitHub OAuth secret:**
+1. Generate a new secret in your GitHub OAuth App settings.
+2. Update SSM: `aws ssm put-parameter --name /prod/argocd/github-client-secret --value "NEW_SECRET" --type SecureString --overwrite`
+3. Run `./refresh-secret.sh prod us-east-1`
+
 ## How to make a change
 
 **ArgoCD config change** (e.g. add a new repo, change RBAC):
