@@ -22,6 +22,8 @@ spec:
 
   # ClusterSecretStore is cluster-scoped (created by the app manifests via ESO)
   clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
     - group: external-secrets.io
       kind: ClusterSecretStore
 
