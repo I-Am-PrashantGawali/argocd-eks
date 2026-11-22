@@ -43,56 +43,6 @@ data:
   # ownerReferences — this makes ReplicaSets and Pods appear in the tree.
   application.resourceTrackingMethod: label
 
-  # ── Show Pods and ReplicaSets in the UI tree ───────────────────────────────
-  # ArgoCD excludes ReplicaSets by default (hardcoded internal default).
-  # Overriding resource.exclusions to only exclude Events restores full
-  # tree visibility: Deployment → ReplicaSet → Pod
-  resource.exclusions: |
-    - apiGroups:
-      - ""
-      kinds:
-      - Event
-      clusters:
-      - "*"
-
-  resource.inclusions: |
-    - apiGroups:
-      - ""
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-    - apiGroups:
-      - "apps"
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-    - apiGroups:
-      - "batch"
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-    - apiGroups:
-      - "autoscaling"
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-    - apiGroups:
-      - "networking.k8s.io"
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-    - apiGroups:
-      - "external-secrets.io"
-      kinds:
-      - "*"
-      clusters:
-      - "*"
-
   # ── Noise suppression for AWS-managed fields ──────────────────────────────
   resource.customizations: |
     admissionregistration.k8s.io/MutatingWebhookConfiguration:
