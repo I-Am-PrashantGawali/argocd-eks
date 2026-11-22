@@ -42,8 +42,17 @@ data:
   application.resourceTrackingMethod: annotation+label
 
   # ── Show Pods and ReplicaSets in the UI tree ───────────────────────────────
-  # ArgoCD hides these by default. Including them lets you see pod status,
-  # logs and events directly from the ArgoCD tree view.
+  # ArgoCD excludes ReplicaSets by default (hardcoded internal default).
+  # Overriding resource.exclusions to only exclude Events restores full
+  # tree visibility: Deployment → ReplicaSet → Pod
+  resource.exclusions: |
+    - apiGroups:
+      - ""
+      kinds:
+      - Event
+      clusters:
+      - "*"
+
   resource.inclusions: |
     - apiGroups:
       - ""
