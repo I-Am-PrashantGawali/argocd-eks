@@ -22,7 +22,7 @@ spec:
     path: k8s_manifests
     directory:
       recurse: false
-      exclude: 'values.yaml'
+      exclude: '{values.yaml,monitoring-lb.yaml}'
 
   destination:
     server: https://kubernetes.default.svc

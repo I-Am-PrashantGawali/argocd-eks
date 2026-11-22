@@ -20,8 +20,10 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: production
 
-  # Apps never create cluster-scoped resources
-  clusterResourceWhitelist: []
+  # ClusterSecretStore is cluster-scoped (created by the app manifests via ESO)
+  clusterResourceWhitelist:
+    - group: external-secrets.io
+      kind: ClusterSecretStore
 
   namespaceResourceWhitelist:
     - group: ''
@@ -36,6 +38,8 @@ spec:
       kind: Deployment
     - group: apps
       kind: StatefulSet
+    - group: apps
+      kind: DaemonSet
     - group: autoscaling
       kind: HorizontalPodAutoscaler
     - group: policy
