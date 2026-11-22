@@ -49,6 +49,12 @@ Secrets are never stored in Git. They live in AWS SSM Parameter Store and are wr
 ```
 This fetches all values from SSM, rewrites `argocd-secret`, and restarts Dex. Safe to run at any time — it is fully idempotent.
 
+**To reset the admin password:**
+```bash
+./reset-admin-password.sh 'MyNewPass@123' prod us-east-1
+```
+This generates a bcrypt hash inside the cluster, stores it in SSM, and restarts Dex. No `htpasswd` needed locally.
+
 **To rotate the GitHub OAuth secret:**
 1. Generate a new secret in your GitHub OAuth App settings.
 2. Update SSM: `aws ssm put-parameter --name /prod/argocd/github-client-secret --value "NEW_SECRET" --type SecureString --overwrite`
