@@ -21,7 +21,7 @@ spec:
     targetRevision: HEAD
     path: k8s_manifests
     directory:
-      recurse: false
+      recurse: true
       exclude: '{values.yaml,monitoring-lb.yaml}'
 
   destination:
